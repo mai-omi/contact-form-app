@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\Contact;
 use App\Models\Tag;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -292,5 +293,108 @@ class ContactFormTest extends TestCase
         // confirm.blade.php has a plain (non-Blade) HTML comment "<!-- タグ -->"
         // that is always rendered, so assert on the visible label span instead.
         $response->assertDontSee('>タグ</span>', false);
+    }
+
+    public function test_store_creates_contact_and_redirects_to_thanks(): void
+    {
+        $payload = $this->validPayload();
+
+        $response = $this->post('/contacts', $payload);
+
+        $response->assertRedirect('/thanks');
+        $this->assertDatabaseHas('contacts', [
+            'first_name' => $payload['first_name'],
+            'last_name' => $payload['last_name'],
+            'gender' => $payload['gender'],
+            'email' => $payload['email'],
+            'tel' => $payload['tel'],
+            'address' => $payload['address'],
+            'building' => $payload['building'],
+            'category_id' => $payload['category_id'],
+            'detail' => $payload['detail'],
+        ]);
+    }
+
+    public function test_store_attaches_selected_tags(): void
+    {
+        $tags = Tag::factory()->count(2)->create();
+
+        $response = $this->post('/contacts', $this->validPayload([
+            'tag_ids' => $tags->pluck('id')->all(),
+        ]));
+
+        $response->assertRedirect('/thanks');
+        $contact = Contact::latest('id')->first();
+        $this->assertEquals($tags->pluck('id')->sort()->values()->all(), $contact->tags->pluck('id')->sort()->values()->all());
+    }
+
+    public function test_store_does_not_attach_tags_when_none_selected(): void
+    {
+        $response = $this->post('/contacts', $this->validPayload());
+
+        $response->assertRedirect('/thanks');
+        $contact = Contact::latest('id')->first();
+        $this->assertCount(0, $contact->tags);
+    }
+
+    public function test_store_saves_null_building_when_omitted(): void
+    {
+        $response = $this->post('/contacts', $this->validPayload(['building' => '']));
+
+        $response->assertRedirect('/thanks');
+        $contact = Contact::latest('id')->first();
+        $this->assertNull($contact->building);
+    }
+
+    public function test_store_fails_when_first_name_is_missing(): void
+    {
+        $payload = $this->validPayload(['first_name' => '']);
+
+        $response = $this->post('/contacts', $payload);
+
+        $response->assertSessionHasErrors(['first_name' => '姓を入力してください']);
+        $this->assertDatabaseCount('contacts', 0);
+    }
+
+    public function test_store_fails_when_category_does_not_exist(): void
+    {
+        $payload = $this->validPayload(['category_id' => 999999]);
+
+        $response = $this->post('/contacts', $payload);
+
+        $response->assertSessionHasErrors(['category_id' => 'お問い合わせの種類を選択してください']);
+        $this->assertDatabaseCount('contacts', 0);
+    }
+
+    public function test_store_fails_when_tag_does_not_exist(): void
+    {
+        $payload = $this->validPayload(['tag_ids' => [999999]]);
+
+        $response = $this->post('/contacts', $payload);
+
+        $response->assertSessionHasErrors('tag_ids.0');
+        $this->assertDatabaseCount('contacts', 0);
+    }
+
+    public function test_store_fails_when_tag_ids_contain_duplicates(): void
+    {
+        $tag = Tag::factory()->create();
+
+        $response = $this->post('/contacts', $this->validPayload([
+            'tag_ids' => [$tag->id, $tag->id],
+        ]));
+
+        $response->assertSessionHasErrors(['tag_ids.1' => 'タグの指定が正しくありません']);
+        $this->assertDatabaseCount('contacts', 0);
+    }
+
+    public function test_store_creates_a_new_record_on_each_submission(): void
+    {
+        $payload = $this->validPayload();
+
+        $this->post('/contacts', $payload);
+        $this->post('/contacts', $payload);
+
+        $this->assertDatabaseCount('contacts', 2);
     }
 }

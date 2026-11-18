@@ -32,7 +32,7 @@ class StoreContactRequest extends FormRequest
             'building' => ['nullable', 'string', 'max:255'],
             'category_id' => ['required', 'integer', 'exists:categories,id'],
             'tag_ids' => ['nullable', 'array'],
-            'tag_ids.*' => ['integer', 'exists:tags,id'],
+            'tag_ids.*' => ['integer', 'exists:tags,id', 'distinct'],
             'detail' => ['required', 'string', 'max:120'],
         ];
     }
@@ -71,6 +71,7 @@ class StoreContactRequest extends FormRequest
             'category_id.exists' => 'お問い合わせの種類を選択してください',
             'tag_ids.array' => 'タグの指定が正しくありません',
             'tag_ids.*.integer' => 'タグの指定が正しくありません',
+            'tag_ids.*.distinct' => 'タグの指定が正しくありません',
             'tag_ids.*.exists' => '選択されたタグが存在しません',
             'detail.required' => 'お問い合わせ内容を入力してください',
             'detail.string' => 'お問い合わせ内容は文字列で入力してください',
