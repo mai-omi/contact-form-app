@@ -397,4 +397,26 @@ class ContactFormTest extends TestCase
 
         $this->assertDatabaseCount('contacts', 2);
     }
+
+    public function test_thanks_page_returns_ok_with_thanks_view(): void
+    {
+        $response = $this->get('/thanks');
+
+        $response->assertOk();
+        $response->assertViewIs('contact.thanks');
+    }
+
+    public function test_thanks_page_displays_completion_message(): void
+    {
+        $response = $this->get('/thanks');
+
+        $response->assertSee('お問い合わせありがとうございました');
+    }
+
+    public function test_thanks_page_home_button_links_to_root(): void
+    {
+        $response = $this->get('/thanks');
+
+        $response->assertSee('href="/"', false);
+    }
 }
