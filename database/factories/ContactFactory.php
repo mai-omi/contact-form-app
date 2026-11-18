@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Category;
+use Faker\Factory as FakerFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -10,6 +11,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class ContactFactory extends Factory
 {
+    protected static ?\Faker\Generator $jaFaker = null;
+
     /**
      * Define the model's default state.
      *
@@ -17,16 +20,18 @@ class ContactFactory extends Factory
      */
     public function definition(): array
     {
+        $faker = static::$jaFaker ??= FakerFactory::create('ja_JP');
+
         return [
             'category_id' => Category::factory(),
-            'first_name' => fake()->lastName(),
-            'last_name' => fake()->firstName(),
-            'gender' => fake()->numberBetween(1, 3),
-            'email' => fake()->unique()->safeEmail(),
-            'tel' => fake()->numerify(str_repeat('#', fake()->randomElement([10, 11]))),
-            'address' => fake()->address(),
-            'building' => fake()->optional()->secondaryAddress(),
-            'detail' => fake()->realText(100),
+            'first_name' => $faker->lastName(),
+            'last_name' => $faker->firstName(),
+            'gender' => $faker->numberBetween(1, 3),
+            'email' => $faker->unique()->safeEmail(),
+            'tel' => $faker->numerify(str_repeat('#', $faker->randomElement([10, 11]))),
+            'address' => $faker->address(),
+            'building' => $faker->optional()->secondaryAddress(),
+            'detail' => $faker->realText(100),
         ];
     }
 }
