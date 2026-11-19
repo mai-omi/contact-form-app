@@ -11,7 +11,7 @@
 - `config/fortify.php` の `features` 配列は `Features::registration()` のみを有効にする(メール確認・パスワードリセット・2段階認証・プロフィール更新は要件にないため無効のまま)。ログイン・ログアウト自体はFortifyのコア機能として `features` の設定に関わらず常に有効。
 - `CreateNewUser` アクションで登録時バリデーション(`name`/`email`/`password`/`password_confirmation`)を実装する。`CreateNewUser` はFormRequestを経由しないFortifyのアクションクラスのため、日本語化はIssue #2までの「FormRequestの`messages()`」方式ではなく `lang/ja/validation.php` のカスタムメッセージで行う([[../../CLAUDE.md]] の Assumptions の通り)。
 - ログイン失敗時の「ログイン情報が登録されていません」、レート制限超過時のメッセージは `lang/ja/auth.php` のカスタムメッセージで日本語化する。
-- ログインのレート制限は `fortify:install` が生成する `FortifyServiceProvider` の `RateLimiter::for('login', ...)` が既定で5回/分(6回目で制限)になっているため、要件(1分間に6回以上失敗でロック)と一致していることを確認するのみとし、値の変更は行わない。
+- ログインのレート制限は、Fortifyが内部で持つ`EnsureLoginIsNotThrottled`(5回/分、6回目でロック)をそのまま使う。`config/fortify.php`の`limiters.login`を`null`にする(スキャフォールド直後の既定値`'login'`のままだと、ルート側に`throttle:login`ミドルウェアが別途かかり、そちらが先に素の429レスポンス(日本語メッセージなし)を返してしまい、`EnsureLoginIsNotThrottled`によるセッションエラー+日本語メッセージの画面遷移に到達しないため)。この結果、`FortifyServiceProvider`に`fortify:install`が生成する`RateLimiter::for('login', ...)`の登録は不要になるため削除する。
 - `/admin` を `auth` ミドルウェアで保護し、未認証アクセスは `/login` にリダイレクトする。この受け入れ条件を検証するには実在するルートが必要なため、本Issueで `AdminController@index` の最小実装(検索条件なしの一覧表示)を追加する。キーワード・性別・カテゴリ・日付による絞り込みはIssue #6の範囲であり、本Issueでは実装しない。
 
 ## 2. 受け入れ条件(ACCEPTANCE.md 4章・5章・6章・10章、0章一部参照)
