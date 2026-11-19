@@ -1,14 +1,10 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Project overview
 
 COACHTECH「基礎学習ターム 確認テスト」の提出物。お問い合わせフォーム(公開フォーム + 管理画面 + 公開API)をゼロから実装する課題。`resources/views/**` の Blade テンプレートは完成品として提供済みで**変更不可**(フロントエンド実装は不要)。それ以外(DB設計・ルーティング・コントローラー・バリデーション・認証・テスト)は未実装で、これから作り込む。
 
 採点は提出された README.md・テーブル仕様・ER図とコードの一致、および `sail artisan test --coverage` のカバレッジ(目標70%)で行われる。全テストを書かなくても個別のテストケースごとに採点される。
-
-詳細要件(画面設計・API仕様・バリデーションルール・シーディング要件・テスト要件・テーブル仕様)は `~/Desktop/COACHTECH/確認テスト要件シートのPDF.pdf` に全て定義されている。実装・レビュー時は仕様の一次情報としてこのPDFを参照すること。要点は以下の通り。
 
 ## Assumptions(前提)
 
@@ -57,12 +53,6 @@ vendor/bin/pint                  # コードフォーマット(コミット前�
 vendor/bin/pint --test           # フォーマット崩れチェックのみ(No findable issues were found. を確認)
 ```
 
-## Testing(テスト)
-
-- 機能を実装する際は対応するテストも書く。
-- `./vendor/bin/sail test` を実行し、失敗があれば原因を修正して再実行し、全テストが通ることを確認する。
-- 作業完了時はテスト結果(実行件数・成功/失敗)を報告する。
-
 ## Coding conventions (PSR-12, 要件シート「コード品質担保のための指示」準拠)
 
 - 変数/メソッド: camelCase / クラス: PascalCase / DBテーブル: snake_case(複数形) / DBカラム: snake_case(単数形)
@@ -83,3 +73,5 @@ PRの本文には以下を記載する。
 ## README.md 必須記載項目(提出前チェック)
 
 プロジェクト名/概要/ER図(自作、Mermaidまたは画像)/環境構築手順/使用技術/APIエンドポイント一覧/開発環境URL/作成者。README不備は大きな減点対象。
+
+#
