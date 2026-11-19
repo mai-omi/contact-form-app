@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Contact;
 use App\Models\Tag;
+use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -44,6 +45,21 @@ class DatabaseConstraintsTest extends TestCase
         $contact->tags()->attach($tag->id);
 
         $tag->delete();
+
+        $this->assertDatabaseMissing('contact_tag', [
+            'contact_id' => $contact->id,
+            'tag_id' => $tag->id,
+        ]);
+    }
+
+    public function test_deleting_tag_via_admin_route_cascades_to_contact_tag(): void
+    {
+        $user = User::factory()->create();
+        $contact = Contact::factory()->create();
+        $tag = Tag::factory()->create();
+        $contact->tags()->attach($tag->id);
+
+        $this->actingAs($user)->delete('/admin/tags/'.$tag->id);
 
         $this->assertDatabaseMissing('contact_tag', [
             'contact_id' => $contact->id,
