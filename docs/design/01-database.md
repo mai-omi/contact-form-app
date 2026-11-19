@@ -1,3 +1,5 @@
+> この設計書は、この機能を実装した時点の記録です。このあとは更新していません。
+
 # Issue #1 設計書: DB設計・マイグレーション・モデル・Seeder実装
 
 ## 1. 概要
@@ -33,57 +35,57 @@ Issue #1 本文は「ログインして`/admin`にアクセスできる」「`/`
 
 **users**(既存マイグレーションのまま。新規作成しない)
 
-| 列 | 型 | 制約 |
-|---|---|---|
-| id | bigint unsigned | PRIMARY KEY, NOT NULL |
-| name | varchar(255) | NOT NULL |
-| email | varchar(255) | NOT NULL, UNIQUE |
-| email_verified_at | timestamp | NULL許可 |
-| password | varchar(255) | NOT NULL |
-| remember_token | varchar(100) | NULL許可 |
-| created_at / updated_at | timestamp | - |
+| 列                      | 型              | 制約                  |
+| ----------------------- | --------------- | --------------------- |
+| id                      | bigint unsigned | PRIMARY KEY, NOT NULL |
+| name                    | varchar(255)    | NOT NULL              |
+| email                   | varchar(255)    | NOT NULL, UNIQUE      |
+| email_verified_at       | timestamp       | NULL許可              |
+| password                | varchar(255)    | NOT NULL              |
+| remember_token          | varchar(100)    | NULL許可              |
+| created_at / updated_at | timestamp       | -                     |
 
 **categories**(新規)
 
-| 列 | 型 | 制約 |
-|---|---|---|
-| id | bigint unsigned | PRIMARY KEY, NOT NULL |
-| content | varchar(255) | NOT NULL |
-| created_at / updated_at | timestamp | - |
+| 列                      | 型              | 制約                  |
+| ----------------------- | --------------- | --------------------- |
+| id                      | bigint unsigned | PRIMARY KEY, NOT NULL |
+| content                 | varchar(255)    | NOT NULL              |
+| created_at / updated_at | timestamp       | -                     |
 
 **contacts**(新規)
 
-| 列 | 型 | 制約 |
-|---|---|---|
-| id | bigint unsigned | PRIMARY KEY, NOT NULL |
-| category_id | bigint unsigned | NOT NULL, FOREIGN KEY → `categories.id`, ON DELETE CASCADE |
-| first_name | varchar(255) | NOT NULL |
-| last_name | varchar(255) | NOT NULL |
-| gender | tinyint | NOT NULL(1=男性, 2=女性, 3=その他) |
-| email | varchar(255) | NOT NULL(UNIQUE制約なし。同一メールで複数回の問い合わせを許容) |
-| tel | varchar(11) | NOT NULL(10〜11桁・ハイフンなし) |
-| address | varchar(255) | NOT NULL |
-| building | varchar(255) | NULL許可 |
-| detail | varchar(120) | NOT NULL |
-| created_at / updated_at | timestamp | - |
+| 列                      | 型              | 制約                                                           |
+| ----------------------- | --------------- | -------------------------------------------------------------- |
+| id                      | bigint unsigned | PRIMARY KEY, NOT NULL                                          |
+| category_id             | bigint unsigned | NOT NULL, FOREIGN KEY → `categories.id`, ON DELETE CASCADE     |
+| first_name              | varchar(255)    | NOT NULL                                                       |
+| last_name               | varchar(255)    | NOT NULL                                                       |
+| gender                  | tinyint         | NOT NULL(1=男性, 2=女性, 3=その他)                             |
+| email                   | varchar(255)    | NOT NULL(UNIQUE制約なし。同一メールで複数回の問い合わせを許容) |
+| tel                     | varchar(11)     | NOT NULL(10〜11桁・ハイフンなし)                               |
+| address                 | varchar(255)    | NOT NULL                                                       |
+| building                | varchar(255)    | NULL許可                                                       |
+| detail                  | varchar(120)    | NOT NULL                                                       |
+| created_at / updated_at | timestamp       | -                                                              |
 
 **tags**(新規)
 
-| 列 | 型 | 制約 |
-|---|---|---|
-| id | bigint unsigned | PRIMARY KEY, NOT NULL |
-| name | varchar(50) | NOT NULL, UNIQUE |
-| created_at / updated_at | timestamp | - |
+| 列                      | 型              | 制約                  |
+| ----------------------- | --------------- | --------------------- |
+| id                      | bigint unsigned | PRIMARY KEY, NOT NULL |
+| name                    | varchar(50)     | NOT NULL, UNIQUE      |
+| created_at / updated_at | timestamp       | -                     |
 
 **contact_tag**(新規・中間テーブル)
 
-| 列 | 型 | 制約 |
-|---|---|---|
-| id | bigint unsigned | PRIMARY KEY, NOT NULL |
-| contact_id | bigint unsigned | NOT NULL, FOREIGN KEY → `contacts.id`, ON DELETE CASCADE |
-| tag_id | bigint unsigned | NOT NULL, FOREIGN KEY → `tags.id`, ON DELETE CASCADE |
-| created_at / updated_at | timestamp | - |
-| (複合制約) | - | UNIQUE(`contact_id`, `tag_id`) |
+| 列                      | 型              | 制約                                                     |
+| ----------------------- | --------------- | -------------------------------------------------------- |
+| id                      | bigint unsigned | PRIMARY KEY, NOT NULL                                    |
+| contact_id              | bigint unsigned | NOT NULL, FOREIGN KEY → `contacts.id`, ON DELETE CASCADE |
+| tag_id                  | bigint unsigned | NOT NULL, FOREIGN KEY → `tags.id`, ON DELETE CASCADE     |
+| created_at / updated_at | timestamp       | -                                                        |
+| (複合制約)              | -               | UNIQUE(`contact_id`, `tag_id`)                           |
 
 ### 4.2 テーブル同士の関係とEloquentリレーション
 
@@ -148,13 +150,13 @@ erDiagram
 
 ### 4.4 Seederで入るデータ
 
-| Seeder | 対象テーブル | 内容 |
-|---|---|---|
-| `UserSeeder` | users | 1件固定: name=`Test User`, email=`test@example.com`, password=`password`(`Hash::make()`でハッシュ化) |
-| `CategorySeeder` | categories | 5件固定: 商品のお届けについて / 商品の交換について / 商品トラブル / ショップへのお問い合わせ / その他 |
-| `TagSeeder` | tags | 5件固定: 質問 / 要望 / 不具合報告 / ご意見 / その他 |
-| `ContactSeeder` | contacts, contact_tag | Faker(`ja_JP`)で20件。`category_id`は既存categoriesからランダム選択。各contactに既存tagsから1〜3件を`attach()`。生成する`tel`はバリデーションルール(10〜11桁・ハイフンなし)に適合する値にする |
-| `DatabaseSeeder` | - | 上記を `UserSeeder → CategorySeeder → TagSeeder → ContactSeeder` の順で呼び出す |
+| Seeder           | 対象テーブル          | 内容                                                                                                                                                                                          |
+| ---------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `UserSeeder`     | users                 | 1件固定: name=`Test User`, email=`test@example.com`, password=`password`(`Hash::make()`でハッシュ化)                                                                                          |
+| `CategorySeeder` | categories            | 5件固定: 商品のお届けについて / 商品の交換について / 商品トラブル / ショップへのお問い合わせ / その他                                                                                         |
+| `TagSeeder`      | tags                  | 5件固定: 質問 / 要望 / 不具合報告 / ご意見 / その他                                                                                                                                           |
+| `ContactSeeder`  | contacts, contact_tag | Faker(`ja_JP`)で20件。`category_id`は既存categoriesからランダム選択。各contactに既存tagsから1〜3件を`attach()`。生成する`tel`はバリデーションルール(10〜11桁・ハイフンなし)に適合する値にする |
+| `DatabaseSeeder` | -                     | 上記を `UserSeeder → CategorySeeder → TagSeeder → ContactSeeder` の順で呼び出す                                                                                                               |
 
 ## 5. 増える画面
 
@@ -168,9 +170,9 @@ erDiagram
 
 - 各マイグレーションを実行した結果、テーブル定義(列・型・NOT NULL・UNIQUE・FOREIGN KEY)が「4.1 列・型・制約」と一致していること。
 - 外部キーのON DELETE CASCADEが機能すること。
-  - `categories` の1件を削除すると、それを参照している `contacts` も削除される。
-  - `contacts` の1件を削除すると、紐づく `contact_tag` の行も削除される。
-  - `tags` の1件を削除すると、紐づく `contact_tag` の行も削除される。
+    - `categories` の1件を削除すると、それを参照している `contacts` も削除される。
+    - `contacts` の1件を削除すると、紐づく `contact_tag` の行も削除される。
+    - `tags` の1件を削除すると、紐づく `contact_tag` の行も削除される。
 - `contact_tag` に同じ `contact_id`・`tag_id` の組み合わせを2回登録しようとするとUNIQUE制約違反になること。
 - `Category::contacts()`・`Contact::category()`・`Contact::tags()`・`Tag::contacts()` の各リレーションが期待通りのモデル/コレクションを返すこと。
 - Seeder実行後、`users`=1件・`categories`=5件・`tags`=5件・`contacts`=20件になっていること。

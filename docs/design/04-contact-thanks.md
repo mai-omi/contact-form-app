@@ -1,3 +1,5 @@
+> この設計書は、この機能を実装した時点の記録です。このあとは更新していません。
+
 # Issue #4 設計書: サンクスページ(PG03)
 
 ## 1. 概要
@@ -9,9 +11,9 @@ GET `/thanks` にアクセスすると、`ContactController@thanks` が `contact
 ## 2. 受け入れ条件(ACCEPTANCE.md 3章参照)
 
 - お問い合わせ送信後に `/thanks` を開くと、「お問い合わせありがとうございました」という送信完了メッセージが表示される。
-  - `contact.thanks` ビュー(提供済み・変更不可)に既にこの文言が含まれており、`thanks()` がそのビューを返すだけで満たされる。
+    - `contact.thanks` ビュー(提供済み・変更不可)に既にこの文言が含まれており、`thanks()` がそのビューを返すだけで満たされる。
 - サンクスページで「HOME」ボタンを押すと、初期状態(未入力)のお問い合わせフォーム入力ページ(`/`)に遷移する。
-  - `thanks.blade.php` の「HOME」ボタンは単純な `<a href="/">` リンクであり、JSは絡んでいない。`resources/js/contact/init.js`・`phone-field-handler.js` にはsessionStorage等への入力値の保存・復元処理が一切なく、`index()` も常にDB由来の `$categories`・`$tags` のみを渡して空のフォームを返す(`old()`やセッションに依存する初期値の仕組みを持たない)。したがって `/` への通常GETアクセスで自動的に未入力の初期状態になり、本Issue側で追加のクリア処理を実装する必要はないと判断した。
+    - `thanks.blade.php` の「HOME」ボタンは単純な `<a href="/">` リンクであり、JSは絡んでいない。`resources/js/contact/init.js`・`phone-field-handler.js` にはsessionStorage等への入力値の保存・復元処理が一切なく、`index()` も常にDB由来の `$categories`・`$tags` のみを渡して空のフォームを返す(`old()`やセッションに依存する初期値の仕組みを持たない)。したがって `/` への通常GETアクセスで自動的に未入力の初期状態になり、本Issue側で追加のクリア処理を実装する必要はないと判断した。
 
 ## 3. 変えないもの
 
@@ -27,9 +29,9 @@ GET `/thanks` にアクセスすると、`ContactController@thanks` が `contact
 
 ## 5. 増える画面
 
-| 画面ID | 名称 | Method/Path | Controller | 備考 |
-|---|---|---|---|---|
-| PG03 | サンクスページ | GET `/thanks` | `ContactController@thanks` | `contact.thanks`ビューを返すのみ(新規実装)。POST `/contacts`からのリダイレクト先はIssue #3で実装済み |
+| 画面ID | 名称           | Method/Path   | Controller                 | 備考                                                                                                 |
+| ------ | -------------- | ------------- | -------------------------- | ---------------------------------------------------------------------------------------------------- |
+| PG03   | サンクスページ | GET `/thanks` | `ContactController@thanks` | `contact.thanks`ビューを返すのみ(新規実装)。POST `/contacts`からのリダイレクト先はIssue #3で実装済み |
 
 ## 6. 入力チェックとメッセージ一覧
 

@@ -1,3 +1,5 @@
+> この設計書は、この機能を実装した時点の記録です。このあとは更新していません。
+
 # Issue #2 設計書: お問い合わせ入力フォーム(PG01)とバリデーション実装
 
 ## 1. 概要
@@ -67,26 +69,26 @@ erDiagram
 
 ## 5. 増える画面
 
-| 画面ID | 名称 | Method/Path | Controller | 備考 |
-|---|---|---|---|---|
-| PG01 | お問い合わせフォーム入力ページ | GET `/` | `ContactController@index` | Blade提供済み。`$categories`・`$tags` をビューに渡す |
+| 画面ID         | 名称                           | Method/Path              | Controller                  | 備考                                                                                                                                                |
+| -------------- | ------------------------------ | ------------------------ | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PG01           | お問い合わせフォーム入力ページ | GET `/`                  | `ContactController@index`   | Blade提供済み。`$categories`・`$tags` をビューに渡す                                                                                                |
 | PG02(表示のみ) | お問い合わせフォーム確認ページ | POST `/contacts/confirm` | `ContactController@confirm` | バリデーション通過後に表示。`$validated`・`$category`・`$tags` をビューに渡す(`confirm.blade.php` の実装に合わせる)。「送信」によるDB保存はIssue #3 |
 
 ## 6. 入力チェックとメッセージ一覧
 
-| 項目 | ルール | エラーメッセージ |
-|---|---|---|
-| `first_name` | required, string, max:255 | 姓を入力してください |
-| `last_name` | required, string, max:255 | 名を入力してください |
-| `gender` | required, integer, in:1,2,3 | 性別を選択してください |
-| `email` | required, string, email, max:255 | (required) メールアドレスを入力してください / (email) メールアドレスはメール形式で入力してください |
-| `tel` | required, string, regex:`/^[0-9]{10,11}$/` | 電話番号を入力してください |
-| `address` | required, string, max:255 | 住所を入力してください |
-| `building` | nullable, string, max:255 | (エラーメッセージなし。任意項目) |
-| `category_id` | required, integer, exists:categories,id | お問い合わせの種類を選択してください |
-| `tag_ids` | nullable, array | (エラーメッセージなし。任意項目) |
-| `tag_ids.*` | integer, exists:tags,id | (要件シートに文言定義なし。既定のバリデーションメッセージに委ねる) |
-| `detail` | required, string, max:120 | (required) お問い合わせ内容を入力してください / (max) お問い合わせ内容は120文字以内で入力してください |
+| 項目          | ルール                                     | エラーメッセージ                                                                                      |
+| ------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| `first_name`  | required, string, max:255                  | 姓を入力してください                                                                                  |
+| `last_name`   | required, string, max:255                  | 名を入力してください                                                                                  |
+| `gender`      | required, integer, in:1,2,3                | 性別を選択してください                                                                                |
+| `email`       | required, string, email, max:255           | (required) メールアドレスを入力してください / (email) メールアドレスはメール形式で入力してください    |
+| `tel`         | required, string, regex:`/^[0-9]{10,11}$/` | 電話番号を入力してください                                                                            |
+| `address`     | required, string, max:255                  | 住所を入力してください                                                                                |
+| `building`    | nullable, string, max:255                  | (エラーメッセージなし。任意項目)                                                                      |
+| `category_id` | required, integer, exists:categories,id    | お問い合わせの種類を選択してください                                                                  |
+| `tag_ids`     | nullable, array                            | (エラーメッセージなし。任意項目)                                                                      |
+| `tag_ids.*`   | integer, exists:tags,id                    | (要件シートに文言定義なし。既定のバリデーションメッセージに委ねる)                                    |
+| `detail`      | required, string, max:120                  | (required) お問い合わせ内容を入力してください / (max) お問い合わせ内容は120文字以内で入力してください |
 
 **メッセージに関する判断**: 要件シート(機能要件一覧)は `tel` について「未入力の場合: 電話番号を入力してください」という文言のみを定義しており、桁数不正(10〜11桁・ハイフンなし以外)の場合に表示する専用の文言は定義していない(API版にはあるが、Web入力フォームにはない)。本設計では、未入力(`required`)・桁数不正(`regex`)のどちらであっても同じ「電話番号を入力してください」を表示する(`StoreContactRequest::messages()` で `tel.required` と `tel.regex` の両方に同じ文言を割り当てる)ものとする。
 

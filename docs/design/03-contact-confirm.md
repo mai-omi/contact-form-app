@@ -1,3 +1,5 @@
+> この設計書は、この機能を実装した時点の記録です。このあとは更新していません。
+
 # Issue #3 設計書: お問い合わせ確認画面・送信処理(PG02)
 
 ## 1. 概要
@@ -7,17 +9,18 @@ POST `/contacts/confirm` で確認ページ(`contact.confirm`)を表示する処
 本Issueで新たに実装するのは、確認ページの「送信」ボタンから呼ばれる POST `/contacts` の処理のみである。`routes/web.php` に `Route::post('/contacts', [ContactController::class, 'store'])` を追加し、`ContactController@store` で `StoreContactRequest` により再バリデーションしたうえで `Contact::create()` を行い、`tag_ids` が指定されていれば作成した `Contact` に `attach()` して `contact_tag` にも記録し、`/thanks` へリダイレクトする。
 
 **本Issueのスコープに含まれないもの**:
+
 - `/thanks` ページ自体の表示(GETルート・サンクスページの文言)はIssue #4の範囲であり、ここでは扱わない。本Issueでは `store()` の戻り先として `/thanks` へのリダイレクトのみを実装する。
 - 確認ページ(`contact.confirm`)の表示処理・`StoreContactRequest` のバリデーションルール定義は[[02-contact-input]](Issue #2)で実装済みであり、本Issueでは変更しない。
 
 ## 2. 受け入れ条件(ACCEPTANCE.md 2章参照)
 
 - 入力ページで全項目を入力し「確認画面」ボタンを押すと、入力内容(氏名・性別文字列・メール・電話・住所・建物名・カテゴリ名・タグ・内容)が確認ページに正しく表示される。
-  - これはIssue #2で実装済みの`confirm()`により既に満たされている条件であり、本Issueでは回帰していないことをテストで再確認するのみとする。
+    - これはIssue #2で実装済みの`confirm()`により既に満たされている条件であり、本Issueでは回帰していないことをテストで再確認するのみとする。
 - 確認ページで「送信」ボタンを押すと、`contacts`テーブルにレコードが作成され、タグがあれば`contact_tag`にも記録され、`/thanks`にリダイレクトされる。
-  - 本Issueで新たに実装する`store()`の中心的な受け入れ条件。
+    - 本Issueで新たに実装する`store()`の中心的な受け入れ条件。
 - 確認ページで「修正」ボタンを押すと、入力内容が保持された状態で`/`に戻る。
-  - `confirm.blade.php` の「修正」ボタンは `history.back()`(ブラウザの戻る)で実装済み・提供済みであり、バックエンドの変更を必要としない。本Issueでは実装・変更しない(Bladeの挙動として既に成立している)。
+    - `confirm.blade.php` の「修正」ボタンは `history.back()`(ブラウザの戻る)で実装済み・提供済みであり、バックエンドの変更を必要としない。本Issueでは実装・変更しない(Bladeの挙動として既に成立している)。
 
 ## 3. 変えないもの
 
@@ -68,8 +71,8 @@ erDiagram
 
 画面(View)自体の追加はなし。PG02(確認ページ)はIssue #2で表示済みであり、本Issueでは「送信」ボタンの送信先を実際に機能させるルーティング・コントローラーのみを追加する。
 
-| 画面ID | 名称 | Method/Path | Controller | 備考 |
-|---|---|---|---|---|
+| 画面ID     | 名称                                         | Method/Path      | Controller                | 備考                                                                                                              |
+| ---------- | -------------------------------------------- | ---------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | PG02(送信) | お問い合わせフォーム確認ページ「送信」ボタン | POST `/contacts` | `ContactController@store` | `StoreContactRequest`で再バリデーション後、`Contact::create()`・タグ`attach()`・`/thanks`へリダイレクト(新規実装) |
 
 参考: `confirm.blade.php`は提供済みBladeの時点で`<form action="/contacts" method="post">`と各項目のhiddenフィールドを備えており、本Issueはそのフォームの送信先を機能させるだけで、Blade側の変更は発生しない。
@@ -78,19 +81,19 @@ erDiagram
 
 `store()`は`confirm()`と同じ`StoreContactRequest`を再利用して再バリデーションする(ルール・メッセージの変更なし)。再バリデーションが必要な理由は、確認ページのhiddenフィールドが開発者ツール等で改ざんされた状態のまま直接`POST /contacts`される可能性があるため。
 
-| 項目 | ルール | エラーメッセージ |
-|---|---|---|
-| `first_name` | required, string, max:255 | 姓を入力してください |
-| `last_name` | required, string, max:255 | 名を入力してください |
-| `gender` | required, integer, in:1,2,3 | 性別を選択してください |
-| `email` | required, string, email, max:255 | (required) メールアドレスを入力してください / (email) メールアドレスはメール形式で入力してください |
-| `tel` | required, string, regex:`/^[0-9]{10,11}$/` | 電話番号を入力してください |
-| `address` | required, string, max:255 | 住所を入力してください |
-| `building` | nullable, string, max:255 | (エラーメッセージなし。任意項目) |
-| `category_id` | required, integer, exists:categories,id | お問い合わせの種類を選択してください |
-| `tag_ids` | nullable, array | (エラーメッセージなし。任意項目) |
-| `tag_ids.*` | integer, exists:tags,id | 選択されたタグが存在しません |
-| `detail` | required, string, max:120 | (required) お問い合わせ内容を入力してください / (max) お問い合わせ内容は120文字以内で入力してください |
+| 項目          | ルール                                     | エラーメッセージ                                                                                      |
+| ------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| `first_name`  | required, string, max:255                  | 姓を入力してください                                                                                  |
+| `last_name`   | required, string, max:255                  | 名を入力してください                                                                                  |
+| `gender`      | required, integer, in:1,2,3                | 性別を選択してください                                                                                |
+| `email`       | required, string, email, max:255           | (required) メールアドレスを入力してください / (email) メールアドレスはメール形式で入力してください    |
+| `tel`         | required, string, regex:`/^[0-9]{10,11}$/` | 電話番号を入力してください                                                                            |
+| `address`     | required, string, max:255                  | 住所を入力してください                                                                                |
+| `building`    | nullable, string, max:255                  | (エラーメッセージなし。任意項目)                                                                      |
+| `category_id` | required, integer, exists:categories,id    | お問い合わせの種類を選択してください                                                                  |
+| `tag_ids`     | nullable, array                            | (エラーメッセージなし。任意項目)                                                                      |
+| `tag_ids.*`   | integer, exists:tags,id                    | 選択されたタグが存在しません                                                                          |
+| `detail`      | required, string, max:120                  | (required) お問い合わせ内容を入力してください / (max) お問い合わせ内容は120文字以内で入力してください |
 
 **再バリデーションの失敗時の挙動に関する判断**: `store()`で`StoreContactRequest`のバリデーションに失敗した場合、Laravelの標準動作により直前のURL(`/contacts/confirm`、確認ページ)にエラーメッセージ付きでリダイレクトされる。確認ページを正規に経由していれば通常は失敗しないため、この経路は主に改ざんアクセスに対する防御であり、要件シート・ACCEPTANCE.mdにはこのケース専用の画面遷移先の定義はない。本設計ではLaravelの標準動作(直前のURLへリダイレクト)のままとし、独自のエラーページ遷移は実装しない。
 
