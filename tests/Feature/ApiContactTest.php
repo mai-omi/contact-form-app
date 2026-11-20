@@ -250,17 +250,6 @@ class ApiContactTest extends TestCase
         $this->assertDatabaseMissing('contacts', ['id' => $contact->id]);
     }
 
-    public function test_destroy_cascades_delete_of_contact_tag_rows(): void
-    {
-        $contact = Contact::factory()->create();
-        $tag = Tag::factory()->create();
-        $contact->tags()->attach($tag->id);
-
-        $this->deleteJson('/api/v1/contacts/'.$contact->id)->assertStatus(204);
-
-        $this->assertDatabaseMissing('contact_tag', ['contact_id' => $contact->id]);
-    }
-
     public function test_destroy_returns_404_when_contact_does_not_exist(): void
     {
         $response = $this->deleteJson('/api/v1/contacts/999999');

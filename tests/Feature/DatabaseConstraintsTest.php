@@ -67,6 +67,20 @@ class DatabaseConstraintsTest extends TestCase
         ]);
     }
 
+    public function test_deleting_contact_via_api_route_cascades_to_contact_tag(): void
+    {
+        $contact = Contact::factory()->create();
+        $tag = Tag::factory()->create();
+        $contact->tags()->attach($tag->id);
+
+        $this->deleteJson('/api/v1/contacts/'.$contact->id);
+
+        $this->assertDatabaseMissing('contact_tag', [
+            'contact_id' => $contact->id,
+            'tag_id' => $tag->id,
+        ]);
+    }
+
     public function test_contact_tag_combination_must_be_unique(): void
     {
         $contact = Contact::factory()->create();

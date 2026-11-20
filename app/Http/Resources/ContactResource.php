@@ -19,8 +19,8 @@ class ContactResource extends JsonResource
             'address' => $this->address,
             'building' => $this->building,
             'detail' => $this->detail,
-            'category' => new CategoryResource($this->whenLoaded('category')),
-            'tags' => TagResource::collection($this->whenLoaded('tags')),
+            'category' => $this->whenLoaded('category', fn () => new CategoryResource($this->category)),
+            'tags' => $this->whenLoaded('tags', fn () => TagResource::collection($this->tags)),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
