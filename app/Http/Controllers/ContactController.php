@@ -70,7 +70,7 @@ class ContactController extends Controller
 
             $handle = fopen('php://output', 'w');
 
-            fputcsv($handle, ['ID', '氏名', '性別', 'メールアドレス', '電話番号', '住所', '建物名', 'お問い合わせの種類', '内容', '作成日']);
+            fputcsv($handle, ['ID', '氏名', '性別', 'メールアドレス', '電話番号', '住所', 'お問い合わせの種類', '内容', '作成日']);
 
             foreach ($contacts as $contact) {
                 fputcsv($handle, [
@@ -80,7 +80,6 @@ class ContactController extends Controller
                     $this->sanitizeCsvField($contact->email),
                     $this->sanitizeCsvField($contact->tel),
                     $this->sanitizeCsvField($contact->address),
-                    $this->sanitizeCsvField($contact->building),
                     $this->sanitizeCsvField($contact->category->content ?? ''),
                     $this->sanitizeCsvField($contact->detail),
                     $contact->created_at->format('Y-m-d'),

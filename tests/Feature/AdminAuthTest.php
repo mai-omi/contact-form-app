@@ -89,7 +89,7 @@ class AdminAuthTest extends TestCase
     {
         $response = $this->post('/register', $this->registerPayload(['password_confirmation' => 'different-password']));
 
-        $response->assertSessionHasErrors(['password' => 'パスワードと一致しません']);
+        $response->assertSessionHasErrors(['password' => 'パスワードと確認用パスワードが一致しません']);
     }
 
     public function test_login_page_returns_ok_with_login_view(): void
