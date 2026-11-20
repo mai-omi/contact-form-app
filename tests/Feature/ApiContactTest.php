@@ -21,7 +21,7 @@ class ApiContactTest extends TestCase
         $response->assertOk();
         $response->assertJsonCount(3, 'data');
         $response->assertJsonPath('meta.current_page', 1);
-        $response->assertJsonPath('meta.per_page', 15);
+        $response->assertJsonPath('meta.per_page', 20);
         $response->assertJsonPath('meta.total', 3);
         $this->assertArrayHasKey('last_page', $response->json('meta'));
     }

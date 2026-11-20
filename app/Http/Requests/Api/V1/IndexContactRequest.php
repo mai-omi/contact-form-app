@@ -5,6 +5,7 @@ namespace App\Http\Requests\Api\V1;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\ValidationException;
 
 class IndexContactRequest extends FormRequest
 {
@@ -20,6 +21,7 @@ class IndexContactRequest extends FormRequest
             'gender' => ['nullable', 'integer', 'in:1,2,3'],
             'category_id' => ['nullable', 'integer', 'exists:categories,id'],
             'date' => ['nullable', 'date'],
+            'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];
     }
@@ -33,6 +35,8 @@ class IndexContactRequest extends FormRequest
             'category_id.integer' => '選択されたカテゴリが存在しません',
             'category_id.exists' => '選択されたカテゴリが存在しません',
             'date.date' => '日付の形式が正しくありません',
+            'page.integer' => 'ページ番号は1以上の整数で指定してください',
+            'page.min' => 'ページ番号は1以上の整数で指定してください',
             'per_page.integer' => '1ページあたりの件数は1〜100の範囲で指定してください',
             'per_page.min' => '1ページあたりの件数は1〜100の範囲で指定してください',
             'per_page.max' => '1ページあたりの件数は1〜100の範囲で指定してください',
@@ -41,6 +45,9 @@ class IndexContactRequest extends FormRequest
 
     protected function failedValidation(Validator $validator): void
     {
-        throw new HttpResponseException(response()->json(['errors' => $validator->errors()], 422));
+        throw new HttpResponseException(response()->json([
+            'message' => (new ValidationException($validator))->getMessage(),
+            'errors' => $validator->errors(),
+        ], 422));
     }
 }
