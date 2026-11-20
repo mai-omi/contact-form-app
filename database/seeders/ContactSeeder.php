@@ -14,11 +14,6 @@ class ContactSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
-            CategorySeeder::class,
-            TagSeeder::class,
-        ]);
-
         $categoryIds = Category::pluck('id');
         $tagIds = Tag::pluck('id');
 
