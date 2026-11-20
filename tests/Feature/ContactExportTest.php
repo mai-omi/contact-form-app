@@ -134,7 +134,7 @@ class ContactExportTest extends TestCase
 
         $rows = $this->csvRows($response->streamedContent());
         $this->assertSame(
-            ['ID', '氏名', '性別', 'メールアドレス', '電話番号', '住所', '建物名', 'お問い合わせの種類', '内容', '作成日'],
+            ['ID', '氏名', '性別', 'メールアドレス', '電話番号', '住所', 'お問い合わせの種類', '内容', '作成日'],
             $rows[0]
         );
     }
@@ -164,7 +164,7 @@ class ContactExportTest extends TestCase
         $rows = $this->csvRows($response->streamedContent());
         $this->assertSame('山田 太郎', $rows[1][1]);
         $this->assertSame('男性', $rows[1][2]);
-        $this->assertSame('商品トラブル', $rows[1][7]);
+        $this->assertSame('商品トラブル', $rows[1][6]);
     }
 
     public function test_export_escapes_fields_that_look_like_spreadsheet_formulas(): void
@@ -173,15 +173,13 @@ class ContactExportTest extends TestCase
         Contact::factory()->create([
             'detail' => '=HYPERLINK("http://evil.example")',
             'address' => '+81-90-1234-5678',
-            'building' => '-building',
         ]);
 
         $response = $this->get('/contacts/export');
 
         $rows = $this->csvRows($response->streamedContent());
-        $this->assertSame("'=HYPERLINK(\"http://evil.example\")", $rows[1][8]);
+        $this->assertSame("'=HYPERLINK(\"http://evil.example\")", $rows[1][7]);
         $this->assertSame("'+81-90-1234-5678", $rows[1][5]);
-        $this->assertSame("'-building", $rows[1][6]);
     }
 
     public function test_export_redirects_to_admin_without_filtering_when_gender_is_invalid(): void
@@ -224,6 +222,6 @@ class ContactExportTest extends TestCase
         $response = $this->get('/contacts/export');
 
         $rows = $this->csvRows($response->streamedContent());
-        $this->assertCount(10, $rows[0]);
+        $this->assertCount(9, $rows[0]);
     }
 }
