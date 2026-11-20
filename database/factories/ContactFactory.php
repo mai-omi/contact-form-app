@@ -3,15 +3,17 @@
 namespace Database\Factories;
 
 use App\Models\Category;
+use App\Models\Contact;
 use Faker\Factory as FakerFactory;
+use Faker\Generator;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Contact>
+ * @extends Factory<Contact>
  */
 class ContactFactory extends Factory
 {
-    protected static ?\Faker\Generator $jaFaker = null;
+    protected static ?Generator $jaFaker = null;
 
     /**
      * Define the model's default state.
